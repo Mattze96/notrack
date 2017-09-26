@@ -455,12 +455,12 @@ function show_whoiserror() {
 function trafficgraph() {
   global $site;
 
-  $allowed_values = array();
-  $blocked_values = array();
-  $xlabels = array();
+  $xlabels = [];
+  $allowed_values = $blocked_values = array_fill(0, 24, 0);
 
+  $start = 4;
 
-  if ((date('H') >= 0) && (date('H') < 4)) {               //Is 'today' yesterday in terms of log data?
+  if ((date('H') >= 0) && (date('H') < $start)) {               //Is 'today' yesterday in terms of log data?
     $today = date("Y-m-d", strtotime('yesterday'));
     $tomorrow = date('Y-m-d');
   }
@@ -469,81 +469,34 @@ function trafficgraph() {
     $tomorrow = date("Y-m-d", strtotime('+1 day'));
   }
 
-  $xlabels[] = '04';                                       //Create xlabels
-  $xlabels[] = '05';
-  $xlabels[] = '06';
-  $xlabels[] = '07';
-  $xlabels[] = '08';
-  $xlabels[] = '09';
-  $xlabels[] = '10';
-  $xlabels[] = '11';
-  $xlabels[] = '12';
-  $xlabels[] = '13';
-  $xlabels[] = '14';
-  $xlabels[] = '15';
-  $xlabels[] = '16';
-  $xlabels[] = '17';
-  $xlabels[] = '18';
-  $xlabels[] = '19';
-  $xlabels[] = '20';
-  $xlabels[] = '21';
-  $xlabels[] = '22';
-  $xlabels[] = '23';
-  $xlabels[] = '00';
-  $xlabels[] = '01';
-  $xlabels[] = '02';
-  $xlabels[] = '03';
+  $sql = "SELECT COUNT(*) as c, CASE ";
+  for($i = 0; $i < 24; $i++) {
+    $a = ($i+$start)%24; $b = ($i+1+$start)%24;
+    $as = sprintf('%02d', $a); $bs = sprintf('%02d', $b);
+    $xlabels[] = $as;
+    $sql .= "WHEN (log_time  >= '".(($a>=$start)?$today:$tomorrow)." $as:00:00' AND log_time < '".(($b>=$start)?$today:$tomorrow)." $bs:00:00') THEN '$as' ";
+  }
+  $sql1 = $sql."END AS s FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'a' GROUP BY s";
+  $sql2 = $sql."END AS s FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'b' GROUP BY s";
 
-  $allowed_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'a' AND log_time >= '$today 04:00:00' AND log_time < '$today 05:00:00'");
-  $allowed_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'a' AND log_time >= '$today 05:00:00' AND log_time < '$today 06:00:00'");
-  $allowed_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'a' AND log_time >= '$today 06:00:00' AND log_time < '$today 07:00:00'");
-  $allowed_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'a' AND log_time >= '$today 07:00:00' AND log_time < '$today 08:00:00'");
-  $allowed_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'a' AND log_time >= '$today 08:00:00' AND log_time < '$today 09:00:00'");
-  $allowed_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'a' AND log_time >= '$today 09:00:00' AND log_time < '$today 10:00:00'");
-  $allowed_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'a' AND log_time >= '$today 10:00:00' AND log_time < '$today 11:00:00'");
-  $allowed_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'a' AND log_time >= '$today 11:00:00' AND log_time < '$today 12:00:00'");
-  $allowed_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'a' AND log_time >= '$today 12:00:00' AND log_time < '$today 13:00:00'");
-  $allowed_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'a' AND log_time >= '$today 13:00:00' AND log_time < '$today 14:00:00'");
-  $allowed_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'a' AND log_time >= '$today 14:00:00' AND log_time < '$today 15:00:00'");
-  $allowed_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'a' AND log_time >= '$today 15:00:00' AND log_time < '$today 16:00:00'");
-  $allowed_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'a' AND log_time >= '$today 16:00:00' AND log_time < '$today 17:00:00'");
-  $allowed_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'a' AND log_time >= '$today 17:00:00' AND log_time < '$today 18:00:00'");
-  $allowed_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'a' AND log_time >= '$today 18:00:00' AND log_time < '$today 19:00:00'");
-  $allowed_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'a' AND log_time >= '$today 19:00:00' AND log_time < '$today 20:00:00'");
-  $allowed_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'a' AND log_time >= '$today 20:00:00' AND log_time < '$today 21:00:00'");
-  $allowed_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'a' AND log_time >= '$today 21:00:00' AND log_time < '$today 22:00:00'");
-  $allowed_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'a' AND log_time >= '$today 22:00:00' AND log_time < '$today 23:00:00'");
-  $allowed_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'a' AND log_time >= '$today 23:00:00' AND log_time < '$tomorrow 00:00:00'");
-  $allowed_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'a' AND log_time >= '$tomorrow 00:00:00' AND log_time < '$tomorrow 01:00:00'");
-  $allowed_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'a' AND log_time >= '$tomorrow 01:00:00' AND log_time < '$tomorrow 02:00:00'");
-  $allowed_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'a' AND log_time >= '$tomorrow 02:00:00' AND log_time < '$tomorrow 03:00:00'");
-  $allowed_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'a' AND log_time >= '$tomorrow 03:00:00' AND log_time < '$tomorrow 04:00:00'");
+  global $db;
+  if (! $result = $db->query($sql1)) {
+    die('trafficgraph(): There was an error running the query'.$db->error);
+  }
 
-  $blocked_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'b' AND log_time >= '$today 04:00:00' AND log_time < '$today 05:00:00'");
-  $blocked_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'b' AND log_time >= '$today 05:00:00' AND log_time < '$today 06:00:00'");
-  $blocked_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'b' AND log_time >= '$today 06:00:00' AND log_time < '$today 07:00:00'");
-  $blocked_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'b' AND log_time >= '$today 07:00:00' AND log_time < '$today 08:00:00'");
-  $blocked_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'b' AND log_time >= '$today 08:00:00' AND log_time < '$today 09:00:00'");
-  $blocked_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'b' AND log_time >= '$today 09:00:00' AND log_time < '$today 10:00:00'");
-  $blocked_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'b' AND log_time >= '$today 10:00:00' AND log_time < '$today 11:00:00'");
-  $blocked_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'b' AND log_time >= '$today 11:00:00' AND log_time < '$today 12:00:00'");
-  $blocked_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'b' AND log_time >= '$today 12:00:00' AND log_time < '$today 13:00:00'");
-  $blocked_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'b' AND log_time >= '$today 13:00:00' AND log_time < '$today 14:00:00'");
-  $blocked_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'b' AND log_time >= '$today 14:00:00' AND log_time < '$today 15:00:00'");
-  $blocked_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'b' AND log_time >= '$today 15:00:00' AND log_time < '$today 16:00:00'");
-  $blocked_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'b' AND log_time >= '$today 16:00:00' AND log_time < '$today 17:00:00'");
-  $blocked_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'b' AND log_time >= '$today 17:00:00' AND log_time < '$today 18:00:00'");
-  $blocked_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'b' AND log_time >= '$today 18:00:00' AND log_time < '$today 19:00:00'");
-  $blocked_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'b' AND log_time >= '$today 19:00:00' AND log_time < '$today 20:00:00'");
-  $blocked_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'b' AND log_time >= '$today 20:00:00' AND log_time < '$today 21:00:00'");
-  $blocked_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'b' AND log_time >= '$today 21:00:00' AND log_time < '$today 22:00:00'");
-  $blocked_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'b' AND log_time >= '$today 22:00:00' AND log_time < '$today 23:00:00'");
-  $blocked_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'b' AND log_time >= '$today 23:00:00' AND log_time < '$tomorrow 00:00:00'");
-  $blocked_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'b' AND log_time >= '$tomorrow 00:00:00' AND log_time < '$tomorrow 01:00:00'");
-  $blocked_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'b' AND log_time >= '$tomorrow 01:00:00' AND log_time < '$tomorrow 02:00:00'");
-  $blocked_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'b' AND log_time >= '$tomorrow 02:00:00' AND log_time < '$tomorrow 03:00:00'");
-  $blocked_values[] = count_rows("SELECT COUNT(*) FROM live WHERE dns_request LIKE '%$site' AND dns_result = 'b' AND log_time >= '$tomorrow 03:00:00' AND log_time < '$tomorrow 04:00:00'");
+  while($row = $result->fetch_assoc()) {
+    $allowed_values[$row['s']-$start] = $row['c'];
+  }
+  $result->free();
 
+  if (! $result = $db->query($sql2)) {
+    die('trafficgraph(): There was an error running the query'.$db->error);
+  }
+
+  while($row = $result->fetch_assoc()) {
+    $blocked_values[$row['s']-$start] = $row['c'];
+  }
+  $result->free();
 
   /*print_r($allowed_values);                              //For debugging
   echo '<br>';
