@@ -255,7 +255,7 @@ function trafficgraph() {
   }
 
   while($row = $result->fetch_assoc()) {
-    $allowed_values[$row['s']-$start] = $row['c'];
+    $allowed_values[(24+$row['s']-$start)%24] = $row['c'];
   }
   $result->free();
 
@@ -264,7 +264,7 @@ function trafficgraph() {
   }
 
   while($row = $result->fetch_assoc()) {
-    $blocked_values[$row['s']-$start] = $row['c'];
+    $blocked_values[(24+$row['s']-$start)%24] = $row['c'];
   }
   $result->free();
 
